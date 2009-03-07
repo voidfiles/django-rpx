@@ -17,3 +17,4 @@ class RpxData(models.Model):
 
     def __unicode__(self):
         return u"RpxUserData for %s" % self.user.username
+        

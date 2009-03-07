@@ -2,6 +2,7 @@
 NB - doesn't work yet
 *********************
 
+most urgent TODO - implement an authentication backend as per http://docs.djangoproject.com/en/dev/topics/auth/#authentication-backends
 
 Handles site login and user registration using the rpxnow.com service..
 
@@ -17,5 +18,13 @@ TODO:
   * documentation of conf settings
   
 INSTALLATION:
-  put 'rpx' in your installed apps. additionally, create a url path that serves up the rpx_response view in views.py.
-  currently this app looks for the domain name in settings.HOST; that's the way that the site i built this in works but you may wish to inspect the HttpRequest or interrogate the django.contrib.sites app to find out the domain for generating the callback URL
+  * put the code in a directory called 'rpx' somewhere in your path and pyt 'rpx' in your installed apps. additionally, create a url path that serves up the rpx_response view in views.py.
+  * you will also need to put the RPXNOW_API_KEY, RPXNOW_REALM and optionally RPX_TRUSTED_PROVIDERS into your settings.py
+  * you will also need to add rpx to your authentication providers list
+  AUTHENTICATION_BACKENDS = (
+    'rpx.backends.RpxBackend',
+    'django.contrib.auth.backends.ModelBackend',
+  )
+  
+  * you might want to include the rpx template tags in your site code somewhere to provide a login link. the embedded iframe version is not yet integrated - the popup/link-out version is provided
+  
