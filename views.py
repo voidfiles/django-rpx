@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from rpx.models import RpxData
 import settings
-TRUSTED_PROVIDERS=set(getattr(settings,'RPX_TRUSTED_PROVIDERS'), [])
+TRUSTED_PROVIDERS=set(getattr(settings,'RPX_TRUSTED_PROVIDERS', []))
 
 def rpx_response(request):
     from django.utils import simplejson
