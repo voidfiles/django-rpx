@@ -43,7 +43,6 @@ class RpxBackend:
         if not user:
             # no match. we can try to match on email, though, provided that doesn't steal
             # an rpx association
-            import pdb; pdb.set_trace()
             if email and profile['providerName'] in TRUSTED_PROVIDERS:
                 #beware - this would allow account theft, so we only allow it
                 #for trusted providers
