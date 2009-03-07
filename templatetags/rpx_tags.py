@@ -3,7 +3,7 @@ from django.template import Context, loader
 from django.template.loader import render_to_string
 import settings
 from django.core.urlresolvers import reverse
-from djagno.contrib.sites.models import Site
+from django.contrib.sites.models import Site
 """
 "rpx_tags" is a slightly redundant name, but if i clall this module simple "rpx" it only allows me to use the first tag found (although all tags appear in the libary)
 
