@@ -3,7 +3,7 @@ from django.template import Context, loader
 from django.template.loader import render_to_string
 import settings
 from django.core.urlresolvers import reverse
-
+from djagno.contrib.sites.models import Site
 """
 "rpx_tags" is a slightly redundant name, but if i clall this module simple "rpx" it only allows me to use the first tag found (although all tags appear in the libary)
 
@@ -12,20 +12,15 @@ weird.
 
 register = template.Library()
 
-
-# @register.simple_tag
-# def rpx_link(text):
-#     return render_to_string('rpx_link.html',  {
-#       'text': text,
-#       'realm': settings.RPXNOW_REALM,
-#       'token_url': "http://%s%s" % (settings.HOST, reverse('rpx.views.rpx_response'))
-#     })
 @register.inclusion_tag('rpx_link.html', takes_context=True)
 def rpx_link(context, text):
+    current_site=Site.objects.get_current()
+    
     return {
       'text': text,
       'realm': settings.RPXNOW_REALM,
-      'token_url': "http://%s%s" % (settings.HOST, reverse('rpx.views.rpx_response'))
+      'token_url': "http://%s%s" % (current_site.domain,
+        reverse('rpx.views.rpx_response'))
     }
     
 """
@@ -37,9 +32,12 @@ def rpx_link(context, text):
 
 @register.inclusion_tag('rpx_script.html')
 def rpx_script():
+    current_site=Site.objects.get_current()
+    
     return {
       'realm': settings.RPXNOW_REALM,
-      'token_url': "http://%s%s" %(settings.HOST, reverse('rpx.views.rpx_response'))
+      'token_url': "http://%s%s" %(current_site.domain,
+        reverse('rpx.views.rpx_response'))
     }
     
 """
