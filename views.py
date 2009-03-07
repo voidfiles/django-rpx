@@ -9,7 +9,7 @@ def rpx_response(request):
     from django.utils import simplejson
     import urllib
     import urllib2
-    token = request.get('token')
+    token = request.GET.get('token')
     url = 'https://rpxnow.com/api/v2/auth_info'
     args = {
       'format': 'json',
