@@ -8,6 +8,8 @@ by "brian ellin"
 TODO: 
   * implement sign-in interface customisation and localisation: https://rpxnow.com/docs#sign-in_interface
   * implement the mapping api https://rpxnow.com/docs#mappings to ease integration
+  * tests (tricky - mocking out the RPX server before i understand how it works...)
+  * documentation of conf settings
   
 INSTALLATION:
   put 'rpx' in your installed apps. additionally, create a url path that serves up the rpx_response view in views.py.
