@@ -9,7 +9,9 @@ def rpx_response(request):
     from django.utils import simplejson
     import urllib
     import urllib2
-    token = request.GET.get('token')
+
+    token = request.GET.get('token', '')
+    if not token: return HttpResponseForbidden()
     url = 'https://rpxnow.com/api/v2/auth_info'
     args = {
       'format': 'json',
@@ -20,47 +22,48 @@ def rpx_response(request):
       data=urllib.urlencode(args),
     )
     json = simplejson.load(r)
-    if json['stat'] == 'ok':
-        profile = json['profile']
-        rpx_id = profile['identifier']
-        nickname = profile.get('displayName') or \
-          profile.get('preferredUsername')
-        email = profile.get('email', '')
-        profile_pic_url = profile.get('photo')
-        info_page_url = profile.get('url')
-        provider=profile.get("providerName")
+    if json['stat'] <> 'ok':
+        return HttpResponseForbidden()
+    profile = json['profile']
+    rpx_id = profile['identifier']
+    nickname = profile.get('displayName') or \
+      profile.get('preferredUsername')
+    email = profile.get('email', '')
+    profile_pic_url = profile.get('photo')
+    info_page_url = profile.get('url')
+    provider=profile.get("providerName")
+    
+    try:
+        # are we aware of this rpx user already?
+        user=User.objects.get(rpxdata__identifier=rpx_id)
+    except User.DoesNotExist:
+        # no. we can try to match on email, though, provided that doesn't steal
+        # an rpx association
         
-        try:
-            # are we aware of this rpx user already?
-            user=User.objects.get(rpxdata__identifier=rpx_id)
-        except User.DoesNotExist:
-            # no. we can try to match on email, though, provided that doesn't steal
-            # an rpx association
-            
-            if email and profile['providerName'] in TRUSTED_PROVIDERS:
-                #beware - this would allow account theft, so we only allow it
-                #for trusted providers
-                user_candidates=User.objects.all().filter(
-                  rpxdata=None).filter(email=email)
-                # if unambiguous, do it. otherwise, don't.
-                if user_candidates.count()==1:
-                    [user]=user_candidates
-            else:
-                user=User.objects.create_user(nickname, email)
-                rpxdata=RpxData(identifier=rpx_id)
-                rpxdata.save()
-                user.rpxdata=rpxdata
-            
-            if profile_pic_url:
-                rpxdata.profile_pic_url=profile_pic_url
-            if info_page_url:
-                rpxdata.info_page_url=info_page_url
-            if provider:
-                rpxdata.provider=provider
-            rpxdata.save()
-        
-        if user.is_active:
-            login(request, user)
-            return HttpResponseRedirect('/')
+        if email and profile['providerName'] in TRUSTED_PROVIDERS:
+            #beware - this would allow account theft, so we only allow it
+            #for trusted providers
+            user_candidates=User.objects.all().filter(
+              rpxdata=None).filter(email=email)
+            # if unambiguous, do it. otherwise, don't.
+            if user_candidates.count()==1:
+                [user]=user_candidates
         else:
-            return HttpResponseForbidden()
+            user=User.objects.create_user(nickname, email)
+            rpxdata=RpxData(identifier=rpx_id)
+            rpxdata.save()
+            user.rpxdata=rpxdata
+        
+        if profile_pic_url:
+            rpxdata.profile_pic_url=profile_pic_url
+        if info_page_url:
+            rpxdata.info_page_url=info_page_url
+        if provider:
+            rpxdata.provider=provider
+        rpxdata.save()
+    
+    if user.is_active:
+        login(request, user)
+        return HttpResponseRedirect('/')
+    else:
+        return HttpResponseForbidden()
