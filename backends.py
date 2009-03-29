@@ -6,7 +6,7 @@ import settings
 TRUSTED_PROVIDERS=set(getattr(settings,'RPX_TRUSTED_PROVIDERS', []))
 
 class RpxBackend:
-    def get_user(self, rpx_id):
+    def get_user_by_rpx_id(self, rpx_id):
         try:
             return User.objects.get(rpxdata__identifier=rpx_id)
         except User.DoesNotExist:
@@ -28,7 +28,7 @@ class RpxBackend:
         )
         json = simplejson.load(r)
         if json['stat'] <> 'ok':
-            return HttpResponseForbidden()
+            return None
         profile = json['profile']
         rpx_id = profile['identifier']
         nickname = profile.get('displayName') or \
@@ -38,7 +38,7 @@ class RpxBackend:
         info_page_url = profile.get('url')
         provider=profile.get("providerName")
 
-        user=self.get_user(rpx_id)
+        user=self.get_user_by_rpx_id(rpx_id)
         
         if not user:
             # no match. we can try to match on email, though, provided that doesn't steal
@@ -51,8 +51,13 @@ class RpxBackend:
                 # if unambiguous, do it. otherwise, don't.
                 if user_candidates.count()==1:
                     [user]=user_candidates
-            else: #no match, create a new user - but there may be duplicates
+                    rpxdata=RpxData(identifier=rpx_id)
+                else:
+                    return None
+            else:
+                #no match, create a new user - but there may be duplicate user names.
                 username=nickname
+                user=None
                 try:
                     i=0
                     while True:
@@ -62,16 +67,15 @@ class RpxBackend:
                 except User.DoesNotExist:
                     #available name!
                     user=User.objects.create_user(username, email)
-
                 rpxdata=RpxData(identifier=rpx_id)
                 rpxdata.user=user
                 rpxdata.save()
-        
+            
         if profile_pic_url:
-            rpxdata.profile_pic_url=profile_pic_url
+            user.rpxdata.profile_pic_url=profile_pic_url
         if info_page_url:
-            rpxdata.info_page_url=info_page_url
+            user.rpxdata.info_page_url=info_page_url
         if provider:
-            rpxdata.provider=provider
-        rpxdata.save()
+            user.rpxdata.provider=provider
+        user.rpxdata.save()
         return user

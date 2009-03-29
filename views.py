@@ -14,7 +14,7 @@ def rpx_response(request):
     token = request.GET.get('token', '')
     if not token: return HttpResponseForbidden()
     user=authenticate(token=token)
-    if user.is_active:
+    if user and user.is_active:
         login(request, user)
         return HttpResponseRedirect('/')
     else:

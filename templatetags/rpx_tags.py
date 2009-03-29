@@ -8,6 +8,14 @@ from django.contrib.sites.models import Site
 "rpx_tags" is a slightly redundant name, but if i clall this module simple "rpx" it only allows me to use the first tag found (although all tags appear in the libary)
 
 weird.
+
+Anyway.
+
+TODO:
+  * provide for language choice
+  * document
+  * provide for customisation for the "overlay" attribute, whatever it is.
+
 """
 
 register = template.Library()
@@ -24,6 +32,7 @@ def rpx_link(context, text):
     }
     
 """
+put this in "rpx_script.html" in your templates dir.
 <a class="rpxnow" onclick="return false;"
    href="https://{{ realm }}.rpxnow.com/openid/v2/signin?token_url={{ token_url }}">
   {{ text }}
