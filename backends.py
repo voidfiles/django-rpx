@@ -6,13 +6,21 @@ import settings
 TRUSTED_PROVIDERS=set(getattr(settings,'RPX_TRUSTED_PROVIDERS', []))
 
 class RpxBackend:
+    def get_user(self, id):
+        try:
+            return User.objects.get(id=id)
+        except User.DoesNotExist:
+            return None
     def get_user_by_rpx_id(self, rpx_id):
         try:
             return User.objects.get(rpxdata__identifier=rpx_id)
         except User.DoesNotExist:
-            return None
-                
+            return None                
     def authenticate(self, token=''):
+        """
+        TODO: pass in a message array here which can be filled with an error
+        message with failure response
+        """
         from django.utils import simplejson
         import urllib
         import urllib2

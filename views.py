@@ -3,8 +3,6 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from rpx.models import RpxData
 
-
-
 def permute_name(name_string, num):
     num_str=str(num)
     max_len=29-len(num_str)
