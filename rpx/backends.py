@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from rpx.models import RpxData
 import settings
+from rpx.views import permute_name
 TRUSTED_PROVIDERS=set(getattr(settings,'RPX_TRUSTED_PROVIDERS', []))
 
 class RpxBackend:
@@ -49,35 +50,24 @@ class RpxBackend:
         user=self.get_user_by_rpx_id(rpx_id)
         
         if not user:
-            # no match. we can try to match on email, though, provided that doesn't steal
-            # an rpx association
-            if email and profile['providerName'] in TRUSTED_PROVIDERS:
-                #beware - this would allow account theft, so we only allow it
-                #for trusted providers
-                user_candidates=User.objects.all().filter(
-                  rpxdata=None).filter(email=email)
-                # if unambiguous, do it. otherwise, don't.
-                if user_candidates.count()==1:
-                    [user]=user_candidates
-                    rpxdata=RpxData(identifier=rpx_id)
-                else:
-                    return None
-            else:
-                #no match, create a new user - but there may be duplicate user names.
-                username=nickname
-                user=None
-                try:
-                    i=0
-                    while True:
-                        User.objects.get(username=username)
-                        username=permute_name(nickname, i)
-                        i+=1
-                except User.DoesNotExist:
-                    #available name!
-                    user=User.objects.create_user(username, email)
-                rpxdata=RpxData(identifier=rpx_id)
-                rpxdata.user=user
-                rpxdata.save()
+            #no match, create a new user - but there may be duplicate user names.
+            username=nickname
+            user=None
+            try:
+                i=0
+                while True:
+                    User.objects.get(username=username)
+                    username=permute_name(nickname, i)
+                    i+=1
+            except User.DoesNotExist:
+                #available name!
+                user=User.objects.create_user(username, email)
+            rpxdata=RpxData(identifier=rpx_id)
+            # Store the origonal nickname for display
+            user.first_name = nickname
+            user.save()
+            rpxdata.user=user
+            rpxdata.save()
             
         if profile_pic_url:
             user.rpxdata.profile_pic_url=profile_pic_url
@@ -85,5 +75,6 @@ class RpxBackend:
             user.rpxdata.info_page_url=info_page_url
         if provider:
             user.rpxdata.provider=provider
+        
         user.rpxdata.save()
         return user

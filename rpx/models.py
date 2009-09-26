@@ -9,7 +9,7 @@ class RpxData(models.Model):
     user = models.OneToOneField("auth.User")#this could be a foreignKey if we wish to associate many profiles with the user. hm.
     profile_pic_url = models.URLField(blank=True, verify_exists=False)
     info_page_url = models.URLField(blank=True, verify_exists=False)
-    identifier = models.TextField(unique=True)
+    identifier = models.URLField(verify_exists=False, max_length=255)
     provider = models.TextField()
     # class Admin:
     #     list_display = ('',)
