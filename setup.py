@@ -51,7 +51,7 @@ packages, data_files = [], []
 root_dir = os.path.dirname(__file__)
 if root_dir != '':
     os.chdir(root_dir)
-extensions_dir = 'django_extensions'
+extensions_dir = 'rpx'
 
 for dirpath, dirnames, filenames in os.walk(extensions_dir):
     # Ignore dirnames that start with '.'
@@ -63,7 +63,7 @@ for dirpath, dirnames, filenames in os.walk(extensions_dir):
     elif filenames:
         data_files.append([dirpath, [os.path.join(dirpath, f) for f in filenames]])
 
-version = __import__('django_extensions').__version__
+
 
 setup(
     name         = 'django-rpx',
